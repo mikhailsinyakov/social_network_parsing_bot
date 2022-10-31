@@ -6,6 +6,7 @@ from telegram import Update
 from telegram.ext import ApplicationBuilder, CallbackContext, CommandHandler
 
 from dotenv import load_dotenv
+from translation import translate as _
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -14,17 +15,19 @@ logging.basicConfig(
 load_dotenv()
 
 async def start(update: Update, context: CallbackContext):
-    msg = """
-    <b>Приветствую!</b> Ниже я расскажу вам как пользоваться ботом!
-    1. Зайдите в одну из социальных сетей.
-    2. Выберите интересное для вас видео.
-    3. Нажми кнопку "Скопировать".
-    4. Отправьте нашему боту и получите ваш файл!
+    lang = "ru" if update.effective_user.language_code == "ru" else "en"
+    
+    msg = f"""
+    <b>{_("greeting", lang)}!</b> {_("how_to_use_bot", lang)}
+    1. {_("go_to_social_network", lang)}.
+    2. {_("choose_video", lang)}.
+    3. {_("click_copy_button", lang)}.
+    4. {_("send_to_bot", lang)}!
 
-    Бот может скачивать с:
-    1. <a href="https://www.tiktok.com/">TikTok</a> (без водяного знака)
-    2. <a href="https://www.youtube.com/">YouTube</a> (только звук)
-    3. <a href="https://www.instagram.com/">Instagram</a> (посты, истории, reels, хайлайты)
+    {_("bot_can_download", lang)}:
+    1. <a href="https://www.tiktok.com/">TikTok</a> ({_("without_watermark", lang)})
+    2. <a href="https://www.youtube.com/">YouTube</a> ({_("only_sound", lang)})
+    3. <a href="https://www.instagram.com/">Instagram</a> ({_("instagram_options", lang)})
     """
 
     await update.message.reply_text(dedent(msg), parse_mode="HTML")
