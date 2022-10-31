@@ -7,6 +7,5 @@ en:
   send_to_bot: Send to our bot and get your file
   bot_can_download: The bot can download from
   without_watermark: without watermark
-  only_sound: only sound
   instagram_options: posts, stories, reels, highlights
-
+  wrong_url_format: Invalid format entered! Make sure you send the correct link!
