@@ -9,3 +9,5 @@ en:
   without_watermark: without watermark
   instagram_options: posts, stories, reels, highlights
   wrong_url_format: Invalid format entered! Make sure you send the correct link!
+  wait: Wait, this can take a while
+  error_downloading_video: An error occured while downloading video

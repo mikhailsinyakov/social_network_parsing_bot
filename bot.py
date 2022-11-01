@@ -8,6 +8,7 @@ from telegram.ext import ApplicationBuilder, CallbackContext, CommandHandler, Me
 from dotenv import load_dotenv
 from translation import translate as _
 from helpers import is_url
+import download
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -46,9 +47,16 @@ async def message_handler(update: Update, context: CallbackContext):
             3. <a href="https://www.instagram.com/">Instagram</a>
         """
         await update.message.reply_text(dedent(msg), parse_mode="HTML")
-        return
-    if url.startswith("https://www.tiktok.com"):
-        await update.message.reply_text("Downloading tik-tok video")
+    elif url.startswith("https://www.tiktok.com"):
+        msg = await update.message.reply_text(_("wait", lang) + "...")
+        video = download.tiktok_video(url)
+        if video is None:
+            await msg.delete()
+            await update.message.reply_text(_("error_downloading_video", lang))
+            return
+
+        await update.message.reply_video(video, read_timeout=50000, write_timeout=50000)
+        await msg.delete()
     elif url.startswith("https://www.youtube.com"):
         await update.message.reply_text("Downloading youtube video")
     elif url.startswith("https://www.instagram.com"):
