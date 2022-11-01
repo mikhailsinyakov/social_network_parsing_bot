@@ -38,21 +38,23 @@ async def message_handler(update: Update, context: CallbackContext):
     lang = "ru" if update.effective_user.language_code == "ru" else "en"
     url = update.message.text.strip()
 
+    wrong_url_message = f"""
+        {_("wrong_url_format", lang)}
+        {_("bot_can_download", lang)}:
+        1. <a href="https://www.tiktok.com/">TikTok</a>
+        2. <a href="https://www.youtube.com/">YouTube</a>
+        3. <a href="https://www.instagram.com/">Instagram</a>
+    """
+
     if not is_url(url):
-        msg = f"""
-            {_("wrong_url_format", lang)}
-            {_("bot_can_download", lang)}:
-            1. <a href="https://www.tiktok.com/">TikTok</a>
-            2. <a href="https://www.youtube.com/">YouTube</a>
-            3. <a href="https://www.instagram.com/">Instagram</a>
-        """
-        await update.message.reply_text(dedent(msg), parse_mode="HTML")
+        await update.message.reply_text(dedent(wrong_url_message), parse_mode="HTML")
     elif url.startswith("https://www.tiktok.com"):
         msg = await update.message.reply_text(_("wait", lang) + "...")
-        video = download.tiktok_video(url)
-        if video is None:
+        try:
+            video = download.tiktok_video(url)
+        except download.DownloadError as e:
             await msg.delete()
-            await update.message.reply_text(_("error_downloading_video", lang))
+            await update.message.reply_text(_(str(e), lang))
             return
 
         await update.message.reply_video(video, read_timeout=50000, write_timeout=50000)
@@ -62,7 +64,7 @@ async def message_handler(update: Update, context: CallbackContext):
     elif url.startswith("https://www.instagram.com"):
         await update.message.reply_text("Downloading instagram video")
     else:
-        await update.message.reply_text(dedent(msg), parse_mode="HTML")
+        await update.message.reply_text(dedent(wrong_url_message), parse_mode="HTML")
 
 if __name__ == "__main__":
     app = ApplicationBuilder().token(os.environ.get("TELEGRAM_API_TOKEN")).build()
