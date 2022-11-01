@@ -28,7 +28,7 @@ async def start(update: Update, context: CallbackContext):
 
     {_("bot_can_download", lang)}:
     1. <a href="https://www.tiktok.com/">TikTok</a> ({_("without_watermark", lang)})
-    2. <a href="https://www.youtube.com/">YouTube</a>
+    2. <a href="https://www.youtube.com/">YouTube</a> ({_("only_sound", lang)})
     3. <a href="https://www.instagram.com/">Instagram</a> ({_("instagram_options", lang)})
     """
 
@@ -49,18 +49,31 @@ async def message_handler(update: Update, context: CallbackContext):
     if not is_url(url):
         await update.message.reply_text(dedent(wrong_url_message), parse_mode="HTML")
     elif url.startswith("https://www.tiktok.com"):
-        msg = await update.message.reply_text(_("wait", lang) + "...")
+        wait_msg = await update.message.reply_text(_("wait", lang) + "...")
         try:
             video = download.tiktok_video(url)
         except download.DownloadError as e:
-            await msg.delete()
+            await wait_msg.delete()
             await update.message.reply_text(_(str(e), lang))
             return
 
         await update.message.reply_video(video, read_timeout=50000, write_timeout=50000)
-        await msg.delete()
+        await wait_msg.delete()
     elif url.startswith("https://www.youtube.com"):
-        await update.message.reply_text("Downloading youtube video")
+        if "playlist" in url:
+            await update.message.reply_text(_("no_youtube_playlist_accepted", lang) + "...")
+            return
+        
+        wait_msg = await update.message.reply_text(_("wait", lang) + "...")
+        try:
+            audio = download.youtube_audio(url)
+        except download.DownloadError as e:
+            await wait_msg.delete()
+            await update.message.reply_text(_(str(e), lang))
+            return
+
+        await update.message.reply_audio(audio, read_timeout=50000, write_timeout=50000)
+        await wait_msg.delete()
     elif url.startswith("https://www.instagram.com"):
         await update.message.reply_text("Downloading instagram video")
     else:

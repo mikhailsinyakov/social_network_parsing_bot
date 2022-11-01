@@ -7,9 +7,12 @@ en:
   send_to_bot: Send to our bot and get your file
   bot_can_download: The bot can download from
   without_watermark: without watermark
+  only_sound: only sound
   instagram_options: posts, stories, reels, highlights
   wrong_url_format: Invalid format entered! Make sure you send the correct link!
   wait: Wait, this can take a while
   error_downloading_video: An error occured while downloading the video
   error_broken_link: You sent the wrong link
   error_compressing_video: An error occurred while compressing the video
+  no_youtube_playlist_accepted: You can send link to a single youtube video, not playlist
+  error_compressing_video: An error occurred while compressing the audio

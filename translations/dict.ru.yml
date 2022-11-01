@@ -7,9 +7,12 @@ ru:
   send_to_bot: Отправьте нашему боту и получите ваш файл
   bot_can_download: Бот может скачивать с
   without_watermark: без водяного знака
+  only_sound: только звук
   instagram_options: посты, истории, reels, хайлайты
   wrong_url_format: Введен неверный формат! Убедитесь в том, что вы отправили верную ссылку!
   wait: Подождите, это может занять какое-то время
   error_downloading_video: Произошла ошибка во время загрузки видео
   error_broken_link: Вы отправили некорректную ссылку
   error_compressing_video: Произошла ошибка во время сжатия видео
+  no_youtube_playlist_accepted: Вы можете отправить ссылку на видео, но не на плейлист
+  error_compressing_audio: Произошла ошибка во время сжатия аудио
