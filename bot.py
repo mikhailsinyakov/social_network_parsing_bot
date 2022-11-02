@@ -75,7 +75,16 @@ async def message_handler(update: Update, context: CallbackContext):
         await update.message.reply_audio(audio, read_timeout=50000, write_timeout=50000)
         await wait_msg.delete()
     elif url.startswith("https://www.instagram.com"):
-        await update.message.reply_text("Downloading instagram video")
+        wait_msg = await update.message.reply_text(_("wait", lang) + "...")
+        try:
+            video = download.instagram_video(url)
+        except download.DownloadError as e:
+            await wait_msg.delete()
+            await update.message.reply_text(_(str(e), lang))
+            return
+
+        await update.message.reply_video(video, read_timeout=50000, write_timeout=50000)
+        await wait_msg.delete()
     else:
         await update.message.reply_text(dedent(wrong_url_message), parse_mode="HTML")
 

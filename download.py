@@ -2,10 +2,13 @@ from telegram.constants import FileSizeLimit
 
 import requests
 import youtube_dl
+
 import os
+from urllib.parse import urlparse
 
 from helpers import get_compressed_video, get_compressed_audio
 from web_browser import get_tik_tok_video_src
+from insta import download_post, InstaError
 
 class DownloadError(Exception):
     pass
@@ -62,6 +65,21 @@ def get_youtube_audio(url):
     os.remove(audio_file)
     return audio
 
+def instagram_video(url):
+    url_path = urlparse(url).path
+    path_type, short_code = url_path[1:-1].split("/")
+    if path_type == "p":
+        try:
+            video = download_post(short_code)
+        except InstaError as e:
+            if str(e) == "fetching_video_failed":
+                raise DownloadError("maybe_broken_link")
+            elif str(e) == "post_is_not_video":
+                raise DownloadError("instagram_post_is_not_video")
+        return video
+    
+
+
 if __name__ == "__main__":
-    url = "https://www.youtube.com/watch?v=a5myHuC"
-    youtube_audio(url)
+    url = "https://www.instagram.com/p/CkXqCicD0vixvzNqEHB0paPXzfV7Cu8wlKonOI0/"
+    instagram_video(url)

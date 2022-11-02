@@ -1,7 +1,9 @@
 import validators
 from validators import ValidationFailure
-import os
 import ffmpeg
+
+import os
+import shutil
 
 def is_url(s):
     result = validators.url(s)
@@ -89,3 +91,17 @@ def compress_audio(audio_full_path, output_file_name, target_size):
     ffmpeg.output(i, output_file_name,
                   **{'c:a': 'libmp3lame', 'b:a': target_bitrate}
                   ).overwrite_output().run(quiet=True)
+
+
+def get_video_file_and_delete_folder(folder_name):
+    video_file_names = [filename for filename in os.listdir(folder_name) if os.path.splitext(filename)[1] in [".mov", ".mp4", ".gif"]]
+    if not video_file_names:
+        return None
+    video_file_name = video_file_names[0]
+
+    with open(folder_name + "/" + video_file_name, "rb") as f:
+        video = f.read()
+    
+    shutil.rmtree(folder_name)
+
+    return video

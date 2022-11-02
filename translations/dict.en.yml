@@ -12,7 +12,9 @@ en:
   wrong_url_format: Invalid format entered! Make sure you send the correct link!
   wait: Wait, this can take a while
   error_downloading_video: An error occured while downloading the video
-  error_broken_link: You sent the wrong link
+  error_broken_link: You have sent the wrong link
   error_compressing_video: An error occurred while compressing the video
   no_youtube_playlist_accepted: You can send link to a single youtube video, not playlist
   error_compressing_video: An error occurred while compressing the audio
+  maybe_broken_link: Something went wrong. You may have sent the wrong link
+  instagram_post_is_not_video: The link you sent contains 
