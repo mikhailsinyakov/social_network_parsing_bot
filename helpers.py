@@ -93,7 +93,7 @@ def compress_audio(audio_full_path, output_file_name, target_size):
                   ).overwrite_output().run(quiet=True)
 
 
-def get_video_file_and_delete_folder(folder_name):
+def get_video_file(folder_name):
     video_file_names = [filename for filename in os.listdir(folder_name) if os.path.splitext(filename)[1] in [".mov", ".mp4", ".gif"]]
     if not video_file_names:
         return None
@@ -101,7 +101,8 @@ def get_video_file_and_delete_folder(folder_name):
 
     with open(folder_name + "/" + video_file_name, "rb") as f:
         video = f.read()
-    
-    shutil.rmtree(folder_name)
 
     return video
+
+def delete_folder(folder_name):
+    shutil.rmtree(folder_name)

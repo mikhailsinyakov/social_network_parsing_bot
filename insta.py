@@ -3,7 +3,7 @@ import os
 import instaloader
 from dotenv import load_dotenv
 
-from helpers import get_video_file_and_delete_folder
+from helpers import get_video_file, delete_folder
 
 load_dotenv()
 
@@ -33,15 +33,51 @@ def download_post(post_short_code):
         raise InstaError("post_is_not_video")
     L.download_post(post, download_folder)
 
-    video = get_video_file_and_delete_folder(download_folder)
+    video = get_video_file(download_folder)
+    delete_folder(download_folder)
     if video is None:
         raise InstaError("post_is_not_video")
     
     return video
 
+def download_story(username, story_media_id):
+    global L
+    if L is None:
+        init_instaloader()
+    
+    download_folder = "story"
+    
+    try:
+        profile = L.check_profile_id(username)
+    except instaloader.exceptions.ProfileNotExistsException:
+        raise InstaError("wrong_story_url")
+    userid = profile.userid
+    stories = L.get_stories([userid])
+
+    story_items = [item for story in stories for item in story.get_items() if item.mediaid == story_media_id]
+
+    if not story_items:
+        delete_folder(username)
+        raise InstaError("wrong_story_url")
+    
+    story_item = story_items[0]
+
+    if not story_item.is_video:
+        delete_folder(username)
+        raise InstaError("story_is_not_video")
+    
+    L.download_storyitem(story_item, download_folder)
+
+    video = get_video_file(download_folder)
+    delete_folder(download_folder)
+
+    if video is None:
+        raise InstaError("story_is_not_video")
+    
+    delete_folder(username)
+    
+    return video
+
 
 if __name__ == "__main__":
-    video = download_post("CkXqCicD0vixvzNqEHB0paPXzfV7Cu8wlKonOI")
-
-    with open("post_video.mp4", "wb") as f:
-        f.write(video)
+    video = download_story("_nagi_____", 2961946084224516935)

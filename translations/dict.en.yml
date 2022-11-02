@@ -17,4 +17,5 @@ en:
   no_youtube_playlist_accepted: You can send link to a single youtube video, not playlist
   error_compressing_video: An error occurred while compressing the audio
   maybe_broken_link: Something went wrong. You may have sent the wrong link
-  instagram_post_is_not_video: The link you sent contains 
+  instagram_post_is_not_video: The resulting link leads to a post that is not a video
+  instagram_story_is_not_video: The resulting link leads to a story that is not a video
