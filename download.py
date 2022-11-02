@@ -8,7 +8,7 @@ from urllib.parse import urlparse
 
 from helpers import get_compressed_video, get_compressed_audio
 from web_browser import get_tik_tok_video_src
-from insta import download_post, download_story, InstaError
+from insta import download_post_or_reel, download_story, InstaError
 
 class DownloadError(Exception):
     pass
@@ -67,18 +67,19 @@ def get_youtube_audio(url):
 
 def instagram_video(url):
     url_path = urlparse(url).path
-    path_parts = url_path[1:-1].split("/")
+    path_parts = url_path[1:].split("/")
     path_type = path_parts[0]
 
-    if path_type == "p":
-        short_code = path_parts
+    if path_type in ["p", "reel"]:
+        short_code = path_parts[1]
+        
         try:
-            video = download_post(short_code)
+            video = download_post_or_reel(short_code)
         except InstaError as e:
             if str(e) == "fetching_video_failed":
                 raise DownloadError("maybe_broken_link")
-            elif str(e) == "post_is_not_video":
-                raise DownloadError("instagram_post_is_not_video")
+            elif str(e) == "obj_is_not_video":
+                raise DownloadError("instagram_obj_is_not_video")
         return video
     elif path_type == "stories":
         username = path_parts[1]

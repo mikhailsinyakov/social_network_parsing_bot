@@ -17,26 +17,26 @@ def init_instaloader():
     L = instaloader.Instaloader()
     L.login(os.environ.get("INSTAGRAM_USERNAME"), os.environ.get("INSTAGRAM_PASSWORD"))
 
-def download_post(post_short_code):
+def download_post_or_reel(short_code):
     global L
     if L is None:
         init_instaloader()
     
-    download_folder = "post"
+    download_folder = "obj"
     
     try:
-        post = instaloader.Post.from_shortcode(L.context, post_short_code)
+        obj = instaloader.Post.from_shortcode(L.context, short_code)
     except instaloader.exceptions.BadResponseException:
         raise InstaError("fetching_video_failed")
     
-    if not post.is_video:
-        raise InstaError("post_is_not_video")
-    L.download_post(post, download_folder)
+    if not obj.is_video:
+        raise InstaError("obj_is_not_video")
+    L.download_post(obj, download_folder)
 
     video = get_video_file(download_folder)
     delete_folder(download_folder)
     if video is None:
-        raise InstaError("post_is_not_video")
+        raise InstaError("obj_is_not_video")
     
     return video
 
@@ -80,4 +80,5 @@ def download_story(username, story_media_id):
 
 
 if __name__ == "__main__":
-    video = download_story("_nagi_____", 2961946084224516935)
+    video = download_post("CjEkCY3PI13")
+    print(len(video))
