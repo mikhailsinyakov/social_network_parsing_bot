@@ -6,7 +6,8 @@ import youtube_dl
 import os
 import base64
 
-from helpers import get_compressed_video, get_compressed_audio, get_url_path_parts
+from helpers import get_url_path_parts
+from media_file_conversion import compress, ConversionError
 from web_browser import get_tik_tok_video_src
 from insta import download_post_or_reel, download_story, download_highlights, InstaError
 
@@ -23,8 +24,9 @@ def tiktok_video(url):
         raise DownloadError("error_downloading_video")
     video = r.content
     if len(video) > FileSizeLimit.FILESIZE_UPLOAD:
-        compressed_video = get_compressed_video(video, FileSizeLimit.FILESIZE_UPLOAD*0.999)
-        if compressed_video is None:
+        try:
+            compressed_video = compress("video", video, FileSizeLimit.FILESIZE_UPLOAD*0.999)
+        except ConversionError:
             raise DownloadError("error_compressing_video")
         video = compressed_video
 
@@ -34,8 +36,9 @@ def youtube_audio(url):
     audio = get_youtube_audio(url)
 
     if len(audio) > FileSizeLimit.FILESIZE_UPLOAD:
-        compressed_audio = get_compressed_audio(audio, FileSizeLimit.FILESIZE_UPLOAD*0.999)
-        if compressed_audio is None:
+        try:
+            compressed_audio = compress("audio", audio, FileSizeLimit.FILESIZE_UPLOAD*0.999)
+        except ConversionError:
             raise DownloadError("error_compressing_audio")
         audio = compressed_audio
     
@@ -92,7 +95,6 @@ def get_instagram_video(type, args):
                 raise DownloadError("maybe_broken_link")
             elif str(e) == "obj_is_not_video":
                 raise DownloadError("instagram_obj_is_not_video")
-        return video
     elif type == "stories":
         try:
             video = download_story(args["username"], args["story_media_id"])
@@ -101,7 +103,6 @@ def get_instagram_video(type, args):
                 raise DownloadError("maybe_broken_link")
             elif str(e) == "story_is_not_video":
                 raise DownloadError("instagram_story_is_not_video")
-        return video
     elif type == "highlights":
         try:
             video = download_highlights(args["username"], args["highlight_id"])
@@ -112,8 +113,16 @@ def get_instagram_video(type, args):
                 raise DownloadError("no_video_highlights")
             elif str(e) == "concatting_videos_failed":
                 raise DownloadError("error_concatting_videos")
-        return video
     
+    if len(video) > FileSizeLimit.FILESIZE_UPLOAD:
+        try:
+            compressed_video = compress("video", video, FileSizeLimit.FILESIZE_UPLOAD*0.999)
+        except ConversionError:
+            raise DownloadError("error_compressing_video")
+        video = compressed_video
+    
+    return video
+
 
 
 if __name__ == "__main__":

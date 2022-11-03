@@ -3,7 +3,8 @@ import os
 import instaloader
 from dotenv import load_dotenv
 
-from helpers import get_video_file, delete_folder, get_video_names, concat_videos
+from helpers import get_video_file, delete_folder, get_video_names
+from media_file_conversion import concat_videos
 
 load_dotenv()
 
