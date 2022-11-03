@@ -40,7 +40,7 @@ async def message_handler(update: Update, context: CallbackContext):
     if "highlight_id" in context.user_data:
         incoming_msg = update.message.text.strip()
         error_msg = None
-        if incoming_msg.startswith("https://instagram.com"):
+        if incoming_msg.startswith("https://instagram.com") or incoming_msg.startswith("https://www.instagram.com"):
             path_parts = get_url_path_parts(incoming_msg)
             if len(path_parts) > 1:
                 error_msg = _("incorrect_profile_url", lang)
@@ -61,7 +61,16 @@ async def message_handler(update: Update, context: CallbackContext):
 
 async def social_network_url_handler(update: Update, context: CallbackContext, custom_url: str = None):
     lang = "ru" if update.effective_user.language_code == "ru" else "en"
-    url = update.message.text.strip() if custom_url is None else custom_url
+    msg = update.message.text.strip()
+    if custom_url is not None:
+        url = custom_url
+    else:
+        start = msg.find("https://")
+        if start != -1:
+            end = msg.index(" ", start) if " " in msg[start:] else len(msg)
+            url = msg[start:end]
+        else:
+            url = msg
     
     wrong_url_message = f"""
         {_("wrong_url_format", lang)}
@@ -112,10 +121,15 @@ async def social_network_url_handler(update: Update, context: CallbackContext, c
                 video = result
             
         except download.DownloadError as e:
+            if str(e) == "suspicious_activity":
+                await context.bot.send_message(os.environ.get("ADMIN_ID"), str(e))
+                await update.message.reply_text(_("fetching_video_failed", lang))
+            else:
+                await update.message.reply_text(_(str(e), lang))
+            
             await wait_msg.delete()
-            await update.message.reply_text(_(str(e), lang))
             return
-
+            
         await update.message.reply_video(video, read_timeout=50000, write_timeout=50000)
         await wait_msg.delete()
     else:

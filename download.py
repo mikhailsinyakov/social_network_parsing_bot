@@ -108,6 +108,8 @@ def get_instagram_video(type, kwargs):
                 raise DownloadError("no_video_highlights")
             elif str(e) == "concatting_videos_failed":
                 raise DownloadError("error_concatting_videos")
+            elif str(e) == "suspicious_activity":
+                raise DownloadError(str(e))
     
     if len(video) > FileSizeLimit.FILESIZE_UPLOAD:
         try:

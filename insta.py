@@ -16,7 +16,13 @@ class InstaError(Exception):
 def init_instaloader():
     global L
     L = instaloader.Instaloader()
-    L.login(os.environ.get("INSTAGRAM_USERNAME"), os.environ.get("INSTAGRAM_PASSWORD"))
+    try:
+        L.login(os.environ.get("INSTAGRAM_USERNAME"), os.environ.get("INSTAGRAM_PASSWORD"))
+    except instaloader.exceptions.ConnectionException as e:
+        if "Checkpoint required" in str(e):
+            raise InstaError("suspicious_activity")
+        else:
+            raise InstaError("fetching_video_failed")
 
 def download_post_or_reel(short_code):
     global L
@@ -27,7 +33,7 @@ def download_post_or_reel(short_code):
     
     try:
         obj = instaloader.Post.from_shortcode(L.context, short_code)
-    except instaloader.exceptions.BadResponseException:
+    except:
         raise InstaError("fetching_video_failed")
     
     if obj.owner_profile.is_private:
@@ -99,7 +105,7 @@ def download_highlights(username, highlight_id):
     
     if profile.is_private:
         raise InstaError("accessing_private_profile")
-        
+
     userid = profile.userid
     highlights = L.get_highlights(userid)
     
