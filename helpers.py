@@ -4,6 +4,7 @@ import ffmpeg
 
 import os
 import shutil
+from urllib.parse import urlparse
 
 def is_url(s):
     result = validators.url(s)
@@ -92,6 +93,17 @@ def compress_audio(audio_full_path, output_file_name, target_size):
                   **{'c:a': 'libmp3lame', 'b:a': target_bitrate}
                   ).overwrite_output().run(quiet=True)
 
+def concat_videos(directory, video_filenames, output_video_name):
+    videos_list_name = "videos_list.txt"
+    videos_list_text = "\n".join([f"file '{directory}/{name}'" for name in video_filenames])
+
+    with open(videos_list_name, "w") as f:
+        f.write(videos_list_text)
+    
+    os.system(f"ffmpeg -f concat -safe 0 -i {videos_list_name} -c copy {output_video_name} -vf setpts=PTS-STARTPTS")
+
+    os.remove(videos_list_name)
+
 
 def get_video_file(folder_name):
     video_file_names = [filename for filename in os.listdir(folder_name) if os.path.splitext(filename)[1] in [".mov", ".mp4", ".gif"]]
@@ -106,3 +118,12 @@ def get_video_file(folder_name):
 
 def delete_folder(folder_name):
     shutil.rmtree(folder_name)
+
+def get_video_names(folder_name):
+    print(os.listdir(folder_name))
+    return [filename for filename in os.listdir(folder_name) if os.path.splitext(filename)[1] == ".mp4"]
+
+def get_url_path_parts(url):
+    url_path = urlparse(url).path
+    return url_path[1:].split("/")
+

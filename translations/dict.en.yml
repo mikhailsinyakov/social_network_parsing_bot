@@ -14,8 +14,13 @@ en:
   error_downloading_video: An error occured while downloading the video
   error_broken_link: You have sent the wrong link
   error_compressing_video: An error occurred while compressing the video
-  no_youtube_playlist_accepted: You can send link to a single youtube video, not playlist
+  no_youtube_playlist_accepted: You can only send a link to a single youtube video, not a playlist
   error_compressing_video: An error occurred while compressing the audio
   maybe_broken_link: Something went wrong. You may have sent the wrong link
   instagram_obj_is_not_video: The resulting link leads to a post or a reel that is not a video
   instagram_story_is_not_video: The resulting link leads to a story that is not a video
+  need_to_get_profile: Unfortunately, I can't download highlights without info about its author. Please send either author's name or author's profile URL
+  incorrect_profile_url: The profile URL you entered is incorrect
+  incorrect_profile: The profile you entered does not exist
+  no_video_highlights: The highlights you sent do not contain video 
+  error_concatting_videos: An error occurred while merging the video

@@ -3,7 +3,7 @@ import os
 import instaloader
 from dotenv import load_dotenv
 
-from helpers import get_video_file, delete_folder
+from helpers import get_video_file, delete_folder, get_video_names, concat_videos
 
 load_dotenv()
 
@@ -78,7 +78,44 @@ def download_story(username, story_media_id):
     
     return video
 
+def download_highlights(username, highlight_id):
+    global L
+    if L is None:
+        init_instaloader()
+    
+    download_folder = "highlights"
+
+    try:
+        profile = L.check_profile_id(username)
+    except instaloader.exceptions.ProfileNotExistsException:
+        raise InstaError("incorrect_profile_name")
+    userid = profile.userid
+    highlights = L.get_highlights(userid)
+    
+    story_items = [item for highlight in highlights if highlight.unique_id == highlight_id for item in highlight.get_items() if item.is_video]
+    if not story_items:
+        raise InstaError("no_video_highlights")
+
+    for item in story_items:
+        L.download_storyitem(item, download_folder)
+    
+    output_video_name = "video.mp4"
+
+    concat_videos(download_folder, get_video_names(download_folder), output_video_name)
+
+    delete_folder(download_folder)
+    delete_folder(username)
+
+    try:
+        with open(output_video_name, "rb") as f:
+            video = f.read()
+    except FileNotFoundError:
+        raise InstaError("concatting_videos_failed")
+    
+    os.remove(output_video_name)
+
+    return video
 
 if __name__ == "__main__":
-    video = download_post("CjEkCY3PI13")
+    video = download_highlights("anne.abubakar", 17869943995235799)
     print(len(video))

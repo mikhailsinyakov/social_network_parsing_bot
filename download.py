@@ -4,11 +4,11 @@ import requests
 import youtube_dl
 
 import os
-from urllib.parse import urlparse
+import base64
 
-from helpers import get_compressed_video, get_compressed_audio
+from helpers import get_compressed_video, get_compressed_audio, get_url_path_parts
 from web_browser import get_tik_tok_video_src
-from insta import download_post_or_reel, download_story, InstaError
+from insta import download_post_or_reel, download_story, download_highlights, InstaError
 
 class DownloadError(Exception):
     pass
@@ -66,35 +66,56 @@ def get_youtube_audio(url):
     return audio
 
 def instagram_video(url):
-    url_path = urlparse(url).path
-    path_parts = url_path[1:].split("/")
-    path_type = path_parts[0]
+    path_parts = get_url_path_parts(url)
 
+    path_type = path_parts[0]
     if path_type in ["p", "reel"]:
-        short_code = path_parts[1]
-        
+        return get_instagram_video(path_type, {"short_code": path_parts[1]})
+    elif path_type == "stories":
+        if path_parts[1] == "highlights":
+            return path_parts[2]
+        return get_instagram_video(path_type, {"username": path_parts[1], "story_media_id": int(path_parts[2])})
+    elif path_type == "highlights":
+        return get_instagram_video(path_type, {"username": path_parts[1], "highlight_id": int(path_parts[2])})
+    elif path_type == "s":
+        encoded_text = path_parts[1]
+        highlight_id = base64.b64decode(encoded_text).decode("utf-8").split(":")[1]
+        return highlight_id
+
+
+def get_instagram_video(type, args):
+    if type in ["p", "reel"]:
         try:
-            video = download_post_or_reel(short_code)
+            video = download_post_or_reel(args["short_code"])
         except InstaError as e:
             if str(e) == "fetching_video_failed":
                 raise DownloadError("maybe_broken_link")
             elif str(e) == "obj_is_not_video":
                 raise DownloadError("instagram_obj_is_not_video")
         return video
-    elif path_type == "stories":
-        username = path_parts[1]
-        story_media_id = int(path_parts[2])
+    elif type == "stories":
         try:
-            video = download_story(username, story_media_id)
+            video = download_story(args["username"], args["story_media_id"])
         except InstaError as e:
             if str(e) == "wrong_story_url":
                 raise DownloadError("maybe_broken_link")
             elif str(e) == "story_is_not_video":
                 raise DownloadError("instagram_story_is_not_video")
         return video
+    elif type == "highlights":
+        try:
+            video = download_highlights(args["username"], args["highlight_id"])
+        except InstaError as e:
+            if str(e) == "incorrect_profile_name":
+                raise DownloadError("maybe_broken_link")
+            elif str(e) == "no_video_highlights":
+                raise DownloadError("no_video_highlights")
+            elif str(e) == "concatting_videos_failed":
+                raise DownloadError("error_concatting_videos")
+        return video
     
 
 
 if __name__ == "__main__":
-    url = "https://www.instagram.com/p/CkXqCicD0vixvzNqEHB0paPXzfV7Cu8wlKonOI0/"
-    instagram_video(url)
+    url = "https://www.instagram.com/stories/highlights/17869943995235799/"
+    print(instagram_video(url))
