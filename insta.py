@@ -30,6 +30,9 @@ def download_post_or_reel(short_code):
     except instaloader.exceptions.BadResponseException:
         raise InstaError("fetching_video_failed")
     
+    if obj.owner_profile.is_private:
+        raise InstaError("accessing_private_profile")
+    
     if not obj.is_video:
         raise InstaError("obj_is_not_video")
     L.download_post(obj, download_folder)
@@ -52,6 +55,9 @@ def download_story(username, story_media_id):
         profile = L.check_profile_id(username)
     except instaloader.exceptions.ProfileNotExistsException:
         raise InstaError("wrong_story_url")
+    
+    if profile.is_private:
+        raise InstaError("accessing_private_profile")
     userid = profile.userid
     stories = L.get_stories([userid])
 
@@ -90,6 +96,10 @@ def download_highlights(username, highlight_id):
         profile = L.check_profile_id(username)
     except instaloader.exceptions.ProfileNotExistsException:
         raise InstaError("incorrect_profile_name")
+    
+    if profile.is_private:
+        raise InstaError("accessing_private_profile")
+        
     userid = profile.userid
     highlights = L.get_highlights(userid)
     

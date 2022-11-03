@@ -22,5 +22,6 @@ en:
   need_to_get_profile: Unfortunately, I can't download highlights without info about its author. Please send either author's name or author's profile URL
   incorrect_profile_url: The profile URL you entered is incorrect
   incorrect_profile: The profile you entered does not exist
-  no_video_highlights: The highlights you sent do not contain video 
+  no_video_highlights: The highlights you sent do not contain video
   error_concatting_videos: An error occurred while merging the video
+  accessing_private_profile: Unfortunately, I can't download this file, this user has a private Instagram account

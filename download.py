@@ -86,28 +86,23 @@ def instagram_video(url):
         return highlight_id
 
 
-def get_instagram_video(type, args):
-    if type in ["p", "reel"]:
+def get_instagram_video(type, kwargs):
+    fn = download_post_or_reel if type in ["p", "reel"] else download_story if type == "stories" else download_highlights if type == "highlights" else None
+    if fn is not None:
         try:
-            video = download_post_or_reel(args["short_code"])
+            video = fn(**kwargs)
         except InstaError as e:
-            if str(e) == "fetching_video_failed":
+            if str(e) == "accessing_private_profile":
+                raise DownloadError("accessing_private_profile")
+            elif str(e) == "fetching_video_failed":
                 raise DownloadError("maybe_broken_link")
             elif str(e) == "obj_is_not_video":
                 raise DownloadError("instagram_obj_is_not_video")
-    elif type == "stories":
-        try:
-            video = download_story(args["username"], args["story_media_id"])
-        except InstaError as e:
-            if str(e) == "wrong_story_url":
+            elif str(e) == "wrong_story_url":
                 raise DownloadError("maybe_broken_link")
             elif str(e) == "story_is_not_video":
                 raise DownloadError("instagram_story_is_not_video")
-    elif type == "highlights":
-        try:
-            video = download_highlights(args["username"], args["highlight_id"])
-        except InstaError as e:
-            if str(e) == "incorrect_profile_name":
+            elif str(e) == "incorrect_profile_name":
                 raise DownloadError("maybe_broken_link")
             elif str(e) == "no_video_highlights":
                 raise DownloadError("no_video_highlights")

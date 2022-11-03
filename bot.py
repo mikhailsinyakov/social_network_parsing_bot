@@ -99,7 +99,7 @@ async def social_network_url_handler(update: Update, context: CallbackContext, c
 
         await update.message.reply_audio(audio, read_timeout=50000, write_timeout=50000)
         await wait_msg.delete()
-    elif url.startswith("https://www.instagram.com"):
+    elif url.startswith("https://www.instagram.com") or url.startswith("https://instagram.com"):
         wait_msg = await update.message.reply_text(_("wait", lang) + "...")
         try:
             result = download.instagram_video(url)
