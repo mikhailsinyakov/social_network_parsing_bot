@@ -1,14 +1,15 @@
 import os
 import logging
 from textwrap import dedent
+from dotenv import load_dotenv
 
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CallbackContext, CommandHandler, MessageHandler, filters
 
-from dotenv import load_dotenv
 from translation import translate as _
 from helpers import is_url, get_url_path_parts
 import download
+from processes import execute_in_another_process
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -85,7 +86,7 @@ async def social_network_url_handler(update: Update, context: CallbackContext, c
     elif url.startswith("https://www.tiktok.com"):
         wait_msg = await update.message.reply_text(_("wait", lang) + "...")
         try:
-            video = download.tiktok_video(url)
+            video = await execute_in_another_process(download.tiktok_video, url)
         except download.DownloadError as e:
             await wait_msg.delete()
             await update.message.reply_text(_(str(e), lang))
@@ -100,7 +101,7 @@ async def social_network_url_handler(update: Update, context: CallbackContext, c
         
         wait_msg = await update.message.reply_text(_("wait", lang) + "...")
         try:
-            audio = download.youtube_audio(url)
+            audio = await execute_in_another_process(download.youtube_audio, url)
         except download.DownloadError as e:
             await wait_msg.delete()
             await update.message.reply_text(_(str(e), lang))
@@ -111,7 +112,7 @@ async def social_network_url_handler(update: Update, context: CallbackContext, c
     elif url.startswith("https://www.instagram.com") or url.startswith("https://instagram.com"):
         wait_msg = await update.message.reply_text(_("wait", lang) + "...")
         try:
-            result = download.instagram_video(url)
+            result = await execute_in_another_process(download.instagram_video, url)
             if isinstance(result, str):
                 highlight_id = result
                 await wait_msg.delete()
@@ -145,6 +146,6 @@ if __name__ == "__main__":
     app = ApplicationBuilder().token(os.environ.get("TELEGRAM_API_TOKEN")).build()
 
     app.add_handler(CommandHandler("start", start))
-    app.add_handler(MessageHandler(filters.TEXT, message_handler))
+    app.add_handler(MessageHandler(filters.TEXT, message_handler, block=False))
 
     app.run_polling()
