@@ -1,13 +1,14 @@
 import os
 import logging
 from textwrap import dedent
+
 from dotenv import load_dotenv
 
 from telegram import Update
-from telegram.ext import ApplicationBuilder, CallbackContext, CommandHandler, MessageHandler, filters
+from telegram.ext import ApplicationBuilder, CallbackContext, CommandHandler, MessageHandler, filters, PicklePersistence
 
 from translation import translate as _
-from helpers import is_url, get_url_path_parts
+from helpers import is_url, get_url_path_parts, build_history_item, get_user_ids_in_history, get_history_stats
 import download
 from processes import execute_in_another_process
 
@@ -65,6 +66,9 @@ async def social_network_url_handler(update: Update, context: CallbackContext, c
     msg = update.message.text.strip()
     user_id = update.message.from_user.id
 
+    if "history" not in context.bot_data:
+        context.bot_data["history"] = []
+
     if custom_url is not None:
         url = custom_url
     else:
@@ -99,6 +103,7 @@ async def social_network_url_handler(update: Update, context: CallbackContext, c
         finally:
             del context.user_data["request_is_processing"]
 
+        context.bot_data.append(build_history_item(user_id, "tiktok"))
         await update.message.reply_video(video, read_timeout=50000, write_timeout=50000)
         await wait_msg.delete()
     elif url.startswith(("https://www.youtube.com", "https://youtu.be")):
@@ -117,6 +122,7 @@ async def social_network_url_handler(update: Update, context: CallbackContext, c
         finally:
             del context.user_data["request_is_processing"]
 
+        context.bot_data.append(build_history_item(user_id, "youtube"))
         await update.message.reply_audio(audio, read_timeout=50000, write_timeout=50000)
         await wait_msg.delete()
     elif url.startswith(("https://www.instagram.com", "https://instagram.com")):
@@ -142,7 +148,8 @@ async def social_network_url_handler(update: Update, context: CallbackContext, c
             return
         finally:
             del context.user_data["request_is_processing"]
-            
+        
+        context.bot_data.append(build_history_item(user_id, "instagram"))
         await update.message.reply_video(video, read_timeout=50000, write_timeout=50000)
         await wait_msg.delete()
     else:
@@ -155,7 +162,8 @@ async def request_author(update, context, highlight_id):
     await update.message.reply_text(_("need_to_get_profile", lang))
 
 if __name__ == "__main__":
-    app = ApplicationBuilder().token(os.environ.get("TELEGRAM_API_TOKEN")).build()
+    my_persistence = PicklePersistence("data.pkl")
+    app = ApplicationBuilder().token(os.environ.get("TELEGRAM_API_TOKEN")).persistence(my_persistence).build()
 
     app.add_handler(CommandHandler("start", start))
     app.add_handler(MessageHandler(filters.TEXT, message_handler, block=False))
