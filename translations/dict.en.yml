@@ -25,3 +25,4 @@ en:
   no_video_highlights: The highlights you sent do not contain video
   error_concatting_videos: An error occurred while merging the video
   accessing_private_profile: Unfortunately, I can't download this file, this user has a private Instagram account
+  have_unprocessed_request: Your previous request is being processed right now. Please try again later

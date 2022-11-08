@@ -83,16 +83,21 @@ async def social_network_url_handler(update: Update, context: CallbackContext, c
         3. <a href="https://www.instagram.com/">Instagram</a>
     """
 
-    if not is_url(url):
+    if "request_is_processing" in context.user_data:
+        await update.message.reply_text(_("have_unprocessed_request", lang))
+    elif not is_url(url):
         await update.message.reply_text(dedent(wrong_url_message), parse_mode="HTML")
     elif url.startswith("https://www.tiktok.com"):
         wait_msg = await update.message.reply_text(_("wait", lang) + "...")
+        context.user_data["request_is_processing"] = True
         try:
             video = await execute_in_another_process(download.tiktok_video, url, user_id)
         except download.DownloadError as e:
             await wait_msg.delete()
             await update.message.reply_text(_(str(e), lang))
             return
+        finally:
+            del context.user_data["request_is_processing"]
 
         await update.message.reply_video(video, read_timeout=50000, write_timeout=50000)
         await wait_msg.delete()
@@ -102,17 +107,21 @@ async def social_network_url_handler(update: Update, context: CallbackContext, c
             return
         
         wait_msg = await update.message.reply_text(_("wait", lang) + "...")
+        context.user_data["request_is_processing"] = True
         try:
             audio = await execute_in_another_process(download.youtube_audio, url, user_id)
         except download.DownloadError as e:
             await wait_msg.delete()
             await update.message.reply_text(_(str(e), lang))
             return
+        finally:
+            del context.user_data["request_is_processing"]
 
         await update.message.reply_audio(audio, read_timeout=50000, write_timeout=50000)
         await wait_msg.delete()
     elif url.startswith("https://www.instagram.com") or url.startswith("https://instagram.com"):
         wait_msg = await update.message.reply_text(_("wait", lang) + "...")
+        context.user_data["request_is_processing"] = True
         try:
             result = await execute_in_another_process(download.instagram_video, url, user_id)
             if isinstance(result, str):
@@ -122,7 +131,6 @@ async def social_network_url_handler(update: Update, context: CallbackContext, c
                 return
             else:
                 video = result
-            
         except download.DownloadError as e:
             if str(e) == "suspicious_activity":
                 await context.bot.send_message(os.environ.get("ADMIN_ID"), str(e))
@@ -132,6 +140,8 @@ async def social_network_url_handler(update: Update, context: CallbackContext, c
             
             await wait_msg.delete()
             return
+        finally:
+            del context.user_data["request_is_processing"]
             
         await update.message.reply_video(video, read_timeout=50000, write_timeout=50000)
         await wait_msg.delete()
