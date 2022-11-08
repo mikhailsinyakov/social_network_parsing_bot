@@ -87,7 +87,7 @@ async def social_network_url_handler(update: Update, context: CallbackContext, c
         await update.message.reply_text(_("have_unprocessed_request", lang))
     elif not is_url(url):
         await update.message.reply_text(dedent(wrong_url_message), parse_mode="HTML")
-    elif url.startswith("https://www.tiktok.com"):
+    elif url.startswith(("https://www.tiktok.com", "https://vt.tiktok.com")):
         wait_msg = await update.message.reply_text(_("wait", lang) + "...")
         context.user_data["request_is_processing"] = True
         try:
@@ -101,7 +101,7 @@ async def social_network_url_handler(update: Update, context: CallbackContext, c
 
         await update.message.reply_video(video, read_timeout=50000, write_timeout=50000)
         await wait_msg.delete()
-    elif url.startswith("https://www.youtube.com"):
+    elif url.startswith(("https://www.youtube.com", "https://youtu.be")):
         if "playlist" in url:
             await update.message.reply_text(_("no_youtube_playlist_accepted", lang) + "...")
             return
@@ -119,7 +119,7 @@ async def social_network_url_handler(update: Update, context: CallbackContext, c
 
         await update.message.reply_audio(audio, read_timeout=50000, write_timeout=50000)
         await wait_msg.delete()
-    elif url.startswith("https://www.instagram.com") or url.startswith("https://instagram.com"):
+    elif url.startswith(("https://www.instagram.com", "https://instagram.com")):
         wait_msg = await update.message.reply_text(_("wait", lang) + "...")
         context.user_data["request_is_processing"] = True
         try:
