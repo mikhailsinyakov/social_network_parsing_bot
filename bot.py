@@ -63,6 +63,8 @@ async def message_handler(update: Update, context: CallbackContext):
 async def social_network_url_handler(update: Update, context: CallbackContext, custom_url: str = None):
     lang = "ru" if update.effective_user.language_code == "ru" else "en"
     msg = update.message.text.strip()
+    user_id = update.message.from_user.id
+
     if custom_url is not None:
         url = custom_url
     else:
@@ -86,7 +88,7 @@ async def social_network_url_handler(update: Update, context: CallbackContext, c
     elif url.startswith("https://www.tiktok.com"):
         wait_msg = await update.message.reply_text(_("wait", lang) + "...")
         try:
-            video = await execute_in_another_process(download.tiktok_video, url)
+            video = await execute_in_another_process(download.tiktok_video, url, user_id)
         except download.DownloadError as e:
             await wait_msg.delete()
             await update.message.reply_text(_(str(e), lang))
@@ -101,7 +103,7 @@ async def social_network_url_handler(update: Update, context: CallbackContext, c
         
         wait_msg = await update.message.reply_text(_("wait", lang) + "...")
         try:
-            audio = await execute_in_another_process(download.youtube_audio, url)
+            audio = await execute_in_another_process(download.youtube_audio, url, user_id)
         except download.DownloadError as e:
             await wait_msg.delete()
             await update.message.reply_text(_(str(e), lang))
@@ -112,7 +114,7 @@ async def social_network_url_handler(update: Update, context: CallbackContext, c
     elif url.startswith("https://www.instagram.com") or url.startswith("https://instagram.com"):
         wait_msg = await update.message.reply_text(_("wait", lang) + "...")
         try:
-            result = await execute_in_another_process(download.instagram_video, url)
+            result = await execute_in_another_process(download.instagram_video, url, user_id)
             if isinstance(result, str):
                 highlight_id = result
                 await wait_msg.delete()

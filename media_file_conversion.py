@@ -4,15 +4,15 @@ import ffmpeg
 class ConversionError(Exception):
     pass
 
-def compress(type, file, target_size):
+def compress(type, file, target_size, user_id):
     if type == "video":
-        return get_compressed_video(file, target_size)
+        return get_compressed_video(file, target_size, user_id)
     elif type == "audio":
-        return get_compressed_audio(file, target_size)
+        return get_compressed_audio(file, target_size, user_id)
 
-def get_compressed_video(original_video, target_size):
-    video_name = "video.mp4"
-    output_video_name = "video_c.mp4"
+def get_compressed_video(original_video, target_size, user_id):
+    video_name = f"{user_id}_video.mp4"
+    output_video_name = f"{user_id}_video_c.mp4"
     with open(video_name, "wb") as f:
         f.write(original_video)
 
@@ -30,9 +30,9 @@ def get_compressed_video(original_video, target_size):
     return compressed_video
 
 
-def get_compressed_audio(original_audio, target_size):
-    audio_name = "audio.mp3"
-    output_audio_name = "audio_c.mp3"
+def get_compressed_audio(original_audio, target_size, user_id):
+    audio_name = f"{user_id}_audio.mp3"
+    output_audio_name = f"{user_id}_audio_c.mp3"
     with open(audio_name, "wb") as f:
         f.write(original_audio)
 
@@ -89,8 +89,8 @@ def compress_audio(audio_full_path, output_file_name, target_size):
                   **{'c:a': 'libmp3lame', 'b:a': target_bitrate}
                   ).overwrite_output().run(quiet=True)
 
-def concat_videos(directory, video_filenames, output_video_name):
-    videos_list_name = "videos_list.txt"
+def concat_videos(directory, video_filenames, output_video_name, user_id):
+    videos_list_name = f"{user_id}_videos_list.txt"
     videos_list_text = "\n".join([f"file '{directory}/{name}'" for name in video_filenames])
 
     with open(videos_list_name, "w") as f:

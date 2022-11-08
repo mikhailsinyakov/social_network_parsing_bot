@@ -14,7 +14,7 @@ from insta import download_post_or_reel, download_story, download_highlights, In
 class DownloadError(Exception):
     pass
 
-def tiktok_video(url):
+def tiktok_video(url, user_id):
     video_src = get_tik_tok_video_src(url)
     if video_src is None:
         raise DownloadError("error_broken_link")
@@ -25,27 +25,27 @@ def tiktok_video(url):
     video = r.content
     if len(video) > FileSizeLimit.FILESIZE_UPLOAD:
         try:
-            compressed_video = compress("video", video, FileSizeLimit.FILESIZE_UPLOAD*0.999)
+            compressed_video = compress("video", video, FileSizeLimit.FILESIZE_UPLOAD*0.999, user_id)
         except ConversionError:
             raise DownloadError("error_compressing_video")
         video = compressed_video
 
     return video
 
-def youtube_audio(url):
-    audio = get_youtube_audio(url)
+def youtube_audio(url, user_id):
+    audio = get_youtube_audio(url, user_id)
 
     if len(audio) > FileSizeLimit.FILESIZE_UPLOAD:
         try:
-            compressed_audio = compress("audio", audio, FileSizeLimit.FILESIZE_UPLOAD*0.999)
+            compressed_audio = compress("audio", audio, FileSizeLimit.FILESIZE_UPLOAD*0.999, user_id)
         except ConversionError:
             raise DownloadError("error_compressing_audio")
         audio = compressed_audio
     
     return audio
 
-def get_youtube_audio(url):
-    audio_file = "audio.mp3"
+def get_youtube_audio(url, user_id):
+    audio_file = f"{user_id}_audio.mp3"
     ydl_opts = {
         "format": "bestaudio/best",
         "postprocessors": [{
@@ -68,29 +68,29 @@ def get_youtube_audio(url):
     os.remove(audio_file)
     return audio
 
-def instagram_video(url):
+def instagram_video(url, user_id):
     path_parts = get_url_path_parts(url)
 
     path_type = path_parts[0]
     if path_type in ["p", "reel"]:
-        return get_instagram_video(path_type, {"short_code": path_parts[1]})
+        return get_instagram_video(path_type, user_id, {"short_code": path_parts[1]})
     elif path_type == "stories":
         if path_parts[1] == "highlights":
             return path_parts[2]
-        return get_instagram_video(path_type, {"username": path_parts[1], "story_media_id": int(path_parts[2])})
+        return get_instagram_video(path_type, user_id, {"username": path_parts[1], "story_media_id": int(path_parts[2])})
     elif path_type == "highlights":
-        return get_instagram_video(path_type, {"username": path_parts[1], "highlight_id": int(path_parts[2])})
+        return get_instagram_video(path_type, user_id, {"username": path_parts[1], "highlight_id": int(path_parts[2])})
     elif path_type == "s":
         encoded_text = path_parts[1]
         highlight_id = base64.b64decode(encoded_text).decode("utf-8").split(":")[1]
         return highlight_id
 
 
-def get_instagram_video(type, kwargs):
+def get_instagram_video(type, user_id, kwargs):
     fn = download_post_or_reel if type in ["p", "reel"] else download_story if type == "stories" else download_highlights if type == "highlights" else None
     if fn is not None:
         try:
-            video = fn(**kwargs)
+            video = fn(user_id, **kwargs)
         except InstaError as e:
             if str(e) == "accessing_private_profile":
                 raise DownloadError("accessing_private_profile")
@@ -113,7 +113,7 @@ def get_instagram_video(type, kwargs):
     
     if len(video) > FileSizeLimit.FILESIZE_UPLOAD:
         try:
-            compressed_video = compress("video", video, FileSizeLimit.FILESIZE_UPLOAD*0.999)
+            compressed_video = compress("video", video, FileSizeLimit.FILESIZE_UPLOAD*0.999, user_id)
         except ConversionError:
             raise DownloadError("error_compressing_video")
         video = compressed_video

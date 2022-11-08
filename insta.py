@@ -24,12 +24,12 @@ def init_instaloader():
         else:
             raise InstaError("fetching_video_failed")
 
-def download_post_or_reel(short_code):
+def download_post_or_reel(user_id, short_code):
     global L
     if L is None:
         init_instaloader()
     
-    download_folder = "obj"
+    download_folder = f"{user_id}_obj"
     
     try:
         obj = instaloader.Post.from_shortcode(L.context, short_code)
@@ -50,12 +50,12 @@ def download_post_or_reel(short_code):
     
     return video
 
-def download_story(username, story_media_id):
+def download_story(user_id, username, story_media_id):
     global L
     if L is None:
         init_instaloader()
     
-    download_folder = "story"
+    download_folder = f"{user_id}_story"
     
     try:
         profile = L.check_profile_id(username)
@@ -91,12 +91,12 @@ def download_story(username, story_media_id):
     
     return video
 
-def download_highlights(username, highlight_id):
+def download_highlights(user_id, username, highlight_id):
     global L
     if L is None:
         init_instaloader()
     
-    download_folder = "highlights"
+    download_folder = f"{user_id}_highlights"
 
     try:
         profile = L.check_profile_id(username)
@@ -116,9 +116,9 @@ def download_highlights(username, highlight_id):
     for item in story_items:
         L.download_storyitem(item, download_folder)
     
-    output_video_name = "video.mp4"
+    output_video_name = f"{user_id}_video.mp4"
 
-    concat_videos(download_folder, get_video_names(download_folder), output_video_name)
+    concat_videos(download_folder, get_video_names(download_folder), output_video_name, user_id)
 
     delete_folder(download_folder)
     delete_folder(username)
