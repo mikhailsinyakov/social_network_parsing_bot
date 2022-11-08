@@ -78,19 +78,11 @@ async def social_network_url_handler(update: Update, context: CallbackContext, c
             url = msg[start:end]
         else:
             url = msg
-    
-    wrong_url_message = f"""
-        {_("wrong_url_format", lang)}
-        {_("bot_can_download", lang)}:
-        1. <a href="https://www.tiktok.com/">TikTok</a>
-        2. <a href="https://www.youtube.com/">YouTube</a>
-        3. <a href="https://www.instagram.com/">Instagram</a>
-    """
 
     if "request_is_processing" in context.user_data:
         await update.message.reply_text(_("have_unprocessed_request", lang))
     elif not is_url(url):
-        await update.message.reply_text(dedent(wrong_url_message), parse_mode="HTML")
+        await send_wrong_url_message(update, lang)
     elif url.startswith(("https://www.tiktok.com", "https://vt.tiktok.com")):
         wait_msg = await update.message.reply_text(_("wait", lang) + "...")
         context.user_data["request_is_processing"] = True
@@ -103,7 +95,7 @@ async def social_network_url_handler(update: Update, context: CallbackContext, c
         finally:
             del context.user_data["request_is_processing"]
 
-        context.bot_data.append(build_history_item(user_id, "tiktok"))
+        context.bot_data["history"].append(build_history_item(user_id, "tiktok"))
         await update.message.reply_video(video, read_timeout=50000, write_timeout=50000)
         await wait_msg.delete()
     elif url.startswith(("https://www.youtube.com", "https://youtu.be")):
@@ -122,7 +114,7 @@ async def social_network_url_handler(update: Update, context: CallbackContext, c
         finally:
             del context.user_data["request_is_processing"]
 
-        context.bot_data.append(build_history_item(user_id, "youtube"))
+        context.bot_data["history"].append(build_history_item(user_id, "youtube"))
         await update.message.reply_audio(audio, read_timeout=50000, write_timeout=50000)
         await wait_msg.delete()
     elif url.startswith(("https://www.instagram.com", "https://instagram.com")):
@@ -149,17 +141,28 @@ async def social_network_url_handler(update: Update, context: CallbackContext, c
         finally:
             del context.user_data["request_is_processing"]
         
-        context.bot_data.append(build_history_item(user_id, "instagram"))
+        context.bot_data["history"].append(build_history_item(user_id, "instagram"))
         await update.message.reply_video(video, read_timeout=50000, write_timeout=50000)
         await wait_msg.delete()
     else:
-        await update.message.reply_text(dedent(wrong_url_message), parse_mode="HTML")
+        await send_wrong_url_message(update, lang)
     
 async def request_author(update, context, highlight_id):
     lang = "ru" if update.effective_user.language_code == "ru" else "en"
     context.user_data["highlight_id"] = highlight_id
 
     await update.message.reply_text(_("need_to_get_profile", lang))
+
+async def send_wrong_url_message(update, lang):
+    wrong_url_message = f"""
+        {_("wrong_url_format", lang)}
+        {_("bot_can_download", lang)}:
+        1. <a href="https://www.tiktok.com/">TikTok</a>
+        2. <a href="https://www.youtube.com/">YouTube</a>
+        3. <a href="https://www.instagram.com/">Instagram</a>
+    """
+    await update.message.reply_text(dedent(wrong_url_message), parse_mode="HTML")
+
 
 if __name__ == "__main__":
     my_persistence = PicklePersistence("data.pkl")
