@@ -39,10 +39,8 @@ def get_url_path_parts(url):
 def build_history_item(user_id, social_type):
     return {"time": datetime.now(), "user_id": user_id, "social_type": social_type}
 
-def get_history_stats(_history, user_id=None, social_type=None, interval=None):
+def get_history_stats(_history, social_type=None, interval=None):
     history = _history.copy()
-    if user_id is not None:
-        history = [item for item in history if item["user_id"] == user_id]
     if social_type is not None:
         history = [item for item in history if item["social_type"] == social_type]
     if interval is not None:
@@ -53,10 +51,3 @@ def get_history_stats(_history, user_id=None, social_type=None, interval=None):
         history = [item for item in history if (now - item["time"]) < duration]
     
     return len(history)
-
-def get_user_ids_in_history(history):
-    user_ids = set()
-    for item in history:
-        user_ids.add(item["user_id"])
-    
-    return user_ids
