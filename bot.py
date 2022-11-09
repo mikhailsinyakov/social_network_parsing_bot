@@ -8,7 +8,7 @@ from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import ApplicationBuilder, CallbackContext, CommandHandler, MessageHandler, filters, PicklePersistence, CallbackQueryHandler
 
 from translation import translate as _
-from helpers import is_url, get_url_path_parts, build_history_item, get_user_ids_in_history, get_history_stats
+from helpers import is_url, get_url_path_parts, build_history_item, get_history_stats
 import download
 from processes import execute_in_another_process
 
@@ -131,7 +131,7 @@ async def social_network_url_handler(update: Update, context: CallbackContext, c
                 video = result
         except download.DownloadError as e:
             if str(e) == "suspicious_activity":
-                await context.bot.send_message(os.environ.get("ADMIN_ID"), str(e))
+                await context.bot.send_message(int(os.environ.get("ADMIN_ID")), str(e))
                 await update.message.reply_text(_("fetching_video_failed", lang))
             else:
                 await update.message.reply_text(_(str(e), lang))

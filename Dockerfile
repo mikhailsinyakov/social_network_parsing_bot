@@ -4,7 +4,7 @@ WORKDIR /usr/src/app
 
 COPY . .
 
-RUN pacman -Syy --noconfirm
+RUN pacman -Syu --noconfirm
 RUN pacman -Sy python-pip --noconfirm
 RUN pacman -S tk --noconfirm
 RUN pacman -S chromium --noconfirm
