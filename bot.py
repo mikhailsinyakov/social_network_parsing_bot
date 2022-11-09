@@ -4,8 +4,8 @@ from textwrap import dedent
 
 from dotenv import load_dotenv
 
-from telegram import Update
-from telegram.ext import ApplicationBuilder, CallbackContext, CommandHandler, MessageHandler, filters, PicklePersistence
+from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
+from telegram.ext import ApplicationBuilder, CallbackContext, CommandHandler, MessageHandler, filters, PicklePersistence, CallbackQueryHandler
 
 from translation import translate as _
 from helpers import is_url, get_url_path_parts, build_history_item, get_user_ids_in_history, get_history_stats
@@ -163,12 +163,61 @@ async def send_wrong_url_message(update, lang):
     """
     await update.message.reply_text(dedent(wrong_url_message), parse_mode="HTML")
 
+async def get_stats(update, context):
+    lang = "ru" if update.effective_user.language_code == "ru" else "en"
+    user_id = update.message.from_user.id
+
+    if user_id != int(os.environ.get("ADMIN_ID")):
+        await send_wrong_url_message(update, lang)
+    else:
+        btns = [InlineKeyboardButton(_(social_name, lang), callback_data=social_name) for social_name in ["tiktok", "youtube", "instagram"]]
+        all_social_btn = InlineKeyboardButton(_("all_above", lang), callback_data="all_social")
+        keyboard = InlineKeyboardMarkup([btns, [all_social_btn]])
+
+        context.user_data["stats_filters"] = {
+            "social_network": None,
+            "interval": None
+        }
+        await update.message.reply_text(_("choose_social_network", lang) + ":", reply_markup=keyboard)
+
+async def handle_callback_query(update, context):
+    lang = "ru" if update.effective_user.language_code == "ru" else "en"
+    query = update.callback_query
+    await query.answer()
+
+    if "stats_filters" in context.user_data:
+        if context.user_data["stats_filters"]["social_network"] is None:
+            context.user_data["stats_filters"]["social_network"] = query.data
+
+            btns = [InlineKeyboardButton(_(social_name, lang), callback_data=social_name) for social_name in ["hour", "day", "week"]]
+            all_time_btn = InlineKeyboardButton(_("all_time", lang), callback_data="all_time")
+            keyboard = InlineKeyboardMarkup([btns, [all_time_btn]])
+
+            await context.bot.send_message(chat_id=query.message.chat.id, text=_("choose_interval", lang) + ":", reply_markup=keyboard)
+        elif context.user_data["stats_filters"]["interval"] is None:
+            social_network = context.user_data["stats_filters"]["social_network"]
+            interval = query.data
+
+            del context.user_data["stats_filters"]
+
+            if social_network == "all_social": social_network = None
+            if interval == "all_time": interval = None
+            n_requests = get_history_stats(context.bot_data.get("history", []), social_type=social_network, interval=interval)
+
+            social_network_str = social_network if social_network is not None else _("all_social", lang).lower()
+            interval_str = interval if interval is not None else _("all_time", lang).lower()
+            msg = f"{_('n_requests', lang)} {social_network_str} for {interval_str}: {n_requests}"
+
+            await context.bot.send_message(chat_id=query.message.chat.id, text=msg)
+
 
 if __name__ == "__main__":
     my_persistence = PicklePersistence("data.pkl")
     app = ApplicationBuilder().token(os.environ.get("TELEGRAM_API_TOKEN")).persistence(my_persistence).build()
 
     app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("get_stats", get_stats))
     app.add_handler(MessageHandler(filters.TEXT, message_handler, block=False))
+    app.add_handler(CallbackQueryHandler(handle_callback_query))
 
     app.run_polling()

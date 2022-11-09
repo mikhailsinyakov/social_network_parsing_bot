@@ -26,3 +26,15 @@ en:
   error_concatting_videos: An error occurred while merging the video
   accessing_private_profile: Unfortunately, I can't download this file, this user has a private Instagram account
   have_unprocessed_request: Your previous request is being processed right now. Please try again later
+  choose_social_network: Choose social network name
+  tiktok: TikTok
+  youtube: Youtube
+  instagram: Instagram
+  all_above: All of the above
+  choose_interval: Choose time interval
+  hour: 1 hour
+  day: 1 day
+  week: 1 week
+  all_time: All the time
+  all_social: All social networks
+  n_requests: Number of requests to

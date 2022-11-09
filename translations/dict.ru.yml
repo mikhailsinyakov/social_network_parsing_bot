@@ -26,3 +26,15 @@ ru:
   error_concatting_videos: Произошла ошибка во время объединения видео
   accessing_private_profile: К сожалению, я не могу скачать этот файл, у этого пользователя закрытый аккаунт в инстанрам ;(
   have_unprocessed_request: Ваш предыдущий запрос обрабатывается прямо сейчас. Пожалуйста, попробуйте позже
+  choose_social_network: Выберите название социальной сети
+  tiktok: TikTok
+  youtube: Youtube
+  instagram: Instagram
+  all_above: Все перечисленные
+  choose_interval: Выберите временной интервал
+  hour: 1 час
+  day: 1 день
+  week: 1 неделя
+  all_time: Все время
+  all_social: всем соцсетям
+  n_requests: Количество запросов к
