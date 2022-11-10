@@ -130,7 +130,8 @@ async def social_network_url_handler(update: Update, context: CallbackContext, c
             else:
                 video = result
         except download.DownloadError as e:
-            if str(e) == "suspicious_activity":
+            if "suspicious_activity" in str(e):
+                print(str(e))
                 await context.bot.send_message(int(os.environ.get("ADMIN_ID")), str(e))
                 await update.message.reply_text(_("fetching_video_failed", lang))
             else:

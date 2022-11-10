@@ -20,7 +20,7 @@ def init_instaloader():
         L.login(os.environ.get("INSTAGRAM_USERNAME"), os.environ.get("INSTAGRAM_PASSWORD"))
     except instaloader.exceptions.ConnectionException as e:
         if "Checkpoint required" in str(e):
-            raise InstaError("suspicious_activity")
+            raise InstaError("suspicious_activity: " + str(e))
         else:
             raise InstaError("fetching_video_failed")
 
